@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 import os
-exec(compile(open(os.path.join('pagerduty', 'version.py')).read(), os.path.join('pagerduty', 'version.py'), 'exec'))
+execfile(os.path.join('pagerduty', 'version.py'))
 
 try:
     long_description = open("README.md").read()
@@ -11,7 +11,7 @@ except IOError:
     long_description = ""
 
 setup(
-    name = 'python3-pagerduty',
+    name = 'pagerduty',
     version = VERSION,
     description = 'Library for the PagerDuty service API',
     long_description = long_description,
@@ -19,7 +19,6 @@ setup(
     author_email = 'samuel@playhaven.com',
     url = 'http://github.com/samuel/python-pagerduty',
     packages = find_packages(),
-    install_requires=open('requirements.txt', 'r').readlines(),
     license = "BSD",
     entry_points = {
         "console_scripts": [

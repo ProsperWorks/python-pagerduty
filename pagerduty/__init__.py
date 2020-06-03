@@ -4,15 +4,14 @@ try:
     import json
 except ImportError:
     import simplejson as json
+import urllib2
 
-import requests
-import sys
 from pagerduty.version import *
 
 __version__ = VERSION
 
 class PagerDutyException(Exception):
-    def __init__(self, status, message, errors=None):
+    def __init__(self, status, message, errors):
         super(PagerDutyException, self).__init__(message)
         self.msg = message
         self.status = status
@@ -34,7 +33,6 @@ class PagerDuty(object):
         self.timeout = timeout
     
     def trigger(self, description, incident_key=None, details=None):
-        description = bytes(description, 'UTF-8')
         return self._request("trigger", description=description, incident_key=incident_key, details=details)
     
     def acknowledge(self, incident_key, description=None, details=None):
@@ -48,24 +46,21 @@ class PagerDuty(object):
             "service_key": self.service_key,
             "event_type": event_type,
         }
-        for k, v in list(kwargs.items()):
+        for k, v in kwargs.items():
             if v is not None:
                 event[k] = v
-        print("Original event: {0}, {1}".format(event, event.__class__))
-        encoded_event = json.dumps(str(event))
-
-        print("ENCODED_EVENT: {0}".format(encoded_event), file=sys.stderr)
-        print("EVENT: {0}".format(event), file=sys.stderr)
-        print("ENCODED_EVENT_CLASS: {0}".format(encoded_event.__class__), file=sys.stderr)
-        print("EVENT_CLASS: {0}".format(event.__class__), file=sys.stderr)
+        encoded_event = json.dumps(event)
         try:
-            res = requests.post(self.api_endpoint, data=encoded_event)
-        except Exception as e:
-            print("Exception: {0}".format(e), file=sys.stderr)
-        result = json.loads(res.text)
-        print("STATUS {0}".format(res.status_code), file=sys.stderr)
-        if res.status_code != requests.codes.ok:
-            raise PagerDutyException(res.status_code, res.text, result['errors'])
+            res = urllib2.urlopen(self.api_endpoint, encoded_event, self.timeout)
+        except urllib2.HTTPError, exc:
+            if exc.code != 400:
+                raise
+            res = exc
+        
+        result = json.loads(res.read())
+        
+        if result['status'] != "success":
+            raise PagerDutyException(result['status'], result['message'], result['errors'])
         
         # if result['warnings]: ...
         

@@ -44,12 +44,12 @@ def main():
             incident_key = options.incident_key,
             details = options.details,
         )
-    except PagerDutyException as exc:
+    except PagerDutyException, exc:
         sys.stderr.write(str(exc)+"\n")
         sys.exit(2)
     
     if ik:
-        print(ik)
+        print ik
 
 if __name__ == "__main__":
     main()
