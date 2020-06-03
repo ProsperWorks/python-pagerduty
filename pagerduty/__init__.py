@@ -5,9 +5,7 @@ try:
 except ImportError:
     import simplejson as json
 
-import sys
 import requests
-import urllib.request, urllib.error, urllib.parse
 
 from pagerduty.version import *
 
