@@ -6,7 +6,7 @@ except ImportError:
     import simplejson as json
 
 import requests
-
+import sys
 from pagerduty.version import *
 
 __version__ = VERSION
@@ -51,21 +51,19 @@ class PagerDuty(object):
         for k, v in list(kwargs.items()):
             if v is not None:
                 event[k] = v
+        print("Original event: {0}, {1}".format(event, event.__class__))
         encoded_event = json.dumps(str(event))
+
+        print("ENCODED_EVENT: {0}".format(encoded_event), file=sys.stderr)
+        print("EVENT: {0}".format(event), file=sys.stderr)
+        print("ENCODED_EVENT_CLASS: {0}".format(encoded_event.__class__), file=sys.stderr)
+        print("EVENT_CLASS: {0}".format(event.__class__), file=sys.stderr)
         try:
-            res = requests.post(self.api_endpoint, json=encoded_event)
+            res = requests.post(self.api_endpoint, data=encoded_event)
         except Exception as e:
-            if res.status_code != 400:
-                raise
-            res = e
-            """
-        except urllib.error.HTTPError as exc:
-            if exc.code != 400:
-                raise
-            res = exc
-            """
-        
+            print("Exception: {0}".format(e), file=sys.stderr)
         result = json.loads(res.text)
+        print("STATUS {0}".format(res.status_code), file=sys.stderr)
         if res.status_code != requests.codes.ok:
             raise PagerDutyException(res.status_code, res.text, result['errors'])
         
