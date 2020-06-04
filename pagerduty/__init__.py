@@ -50,16 +50,12 @@ class PagerDuty(object):
         }
         for k, v in list(kwargs.items()):
             if v is not None:
-                event[k] = v
-        print("Original event: {0}, {1}".format(event, event.__class__))
-        encoded_event = json.dumps(str(event))
+                event[k] = str(v)
 
-        print("ENCODED_EVENT: {0}".format(encoded_event), file=sys.stderr)
-        print("EVENT: {0}".format(event), file=sys.stderr)
-        print("ENCODED_EVENT_CLASS: {0}".format(encoded_event.__class__), file=sys.stderr)
-        print("EVENT_CLASS: {0}".format(event.__class__), file=sys.stderr)
+        event=json.dumps(event)
+
         try:
-            res = requests.post(self.api_endpoint, data=encoded_event)
+            res = requests.post(self.api_endpoint, data=event)
         except Exception as e:
             print("Exception: {0}".format(e), file=sys.stderr)
         result = json.loads(res.text)
